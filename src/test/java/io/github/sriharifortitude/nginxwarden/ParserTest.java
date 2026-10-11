@@ -142,7 +142,9 @@ class ParserTest {
 	@Test
 	void anIncludeThatMatchesNothingIsANoteNotAnError() throws IOException {
 		Path file = dir.resolve("nginx.conf");
-		Files.writeString(file, "include /etc/nginx/mime.types;\ninclude missing/*.conf;\nworker_processes 1;\n");
+		// An absolute path under the test's own directory: /etc/nginx/mime.types really exists on CI runners with nginx.
+		String absent = dir.resolve("absent").resolve("mime.types").toAbsolutePath().toString().replace('\\', '/');
+		Files.writeString(file, "include " + absent + ";\ninclude missing/*.conf;\nworker_processes 1;\n");
 		Parser parser = new Parser(dir);
 		Directive root = parser.parseFile(file);
 		assertEquals(1, root.children.size());
